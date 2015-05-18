@@ -33,35 +33,40 @@ module Representable
       @if = @runtime_options[:if]
       @exec_context = options[:exec_context]
       @writer = @runtime_options[:writer]
+      @reader = @runtime_options[:reader]
       @pass_options = options[:pass_options]
       @___getter = @runtime_options[:getter] # FIXME: what is this?
 
       @render_filter = @runtime_options[:render_filter]
       @parse_filter = @runtime_options[:parse_filter]
       @skip_render = @runtime_options[:skip_render]
+      @skip_parse = @runtime_options[:skip_parse]
 
       @___prepare = @runtime_options[:prepare]
       @extend = @runtime_options[:extend]
+      @instance = @runtime_options[:instance]
+      @class = @runtime_options[:class]
       @as = @runtime_options[:as]
       @render_empty = options[:render_empty]
       @serialize = @runtime_options[:serialize]
+      @deserialize = @runtime_options[:deserialize]
     end
 
     attr_reader :readable
     attr_reader :writeable
     attr_reader :if
     attr_reader :exec_context
-    attr_reader :writer
+    attr_reader :writer, :reader
     attr_reader :pass_options
     attr_reader :___getter
     attr_reader :render_filter
     attr_reader :parse_filter
-    attr_reader :skip_render
+    attr_reader :skip_render, :skip_parse
     attr_reader :___prepare
-    attr_reader :extend
+    attr_reader :extend, :instance#, :class
     attr_reader :as
     attr_reader :render_empty
-    attr_reader :serialize
+    attr_reader :serialize, :deserialize
 
     #, :writeable, :if, :exec_context, :writer, :pass_options, :getter
 

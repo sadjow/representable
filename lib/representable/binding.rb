@@ -122,7 +122,7 @@ module Representable
     # Evaluate the option (either nil, static, a block or an instance method call) or
     # executes passed block when option not defined.
     def evaluate_option(name, *args)
-      unless proc = self[name] # TODO: this could dispatch directly to the @definition?
+      unless proc = @definition.send(name) # TODO: this could dispatch directly to the @definition?
         return yield if block_given?
         return
       end
