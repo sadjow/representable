@@ -7,7 +7,7 @@ module Representable
     include Representable::Cloneable
 
     attr_reader :name
-    alias_method :getter, :name
+    alias_method :getter, :name # TODO: deprecate #getter in favour of #getter_method.
 
     def initialize(sym, options={}, &block)
       @options = {}
@@ -21,7 +21,49 @@ module Representable
       options[:as]          ||= @name
 
       setup!(options, &block)
+
+
+
+
+
+      # [:as, :getter, :setter, :class, :instance, :reader, :writer, :extend, :prepare, :if, :deserialize, :serialize,
+      #  :render_filter, :parse_filter, :skip_parse, :skip_render]
+      @readable = options[:readable]
+      @writeable = options[:writeable]
+      @if = @runtime_options[:if]
+      @exec_context = options[:exec_context]
+      @writer = @runtime_options[:writer]
+      @pass_options = options[:pass_options]
+      @___getter = @runtime_options[:getter] # FIXME: what is this?
+
+      @render_filter = @runtime_options[:render_filter]
+      @parse_filter = @runtime_options[:parse_filter]
+      @skip_render = @runtime_options[:skip_render]
+
+      @___prepare = @runtime_options[:prepare]
+      @extend = @runtime_options[:extend]
+      @as = @runtime_options[:as]
+      @render_empty = options[:render_empty]
+      @serialize = @runtime_options[:serialize]
     end
+
+    attr_reader :readable
+    attr_reader :writeable
+    attr_reader :if
+    attr_reader :exec_context
+    attr_reader :writer
+    attr_reader :pass_options
+    attr_reader :___getter
+    attr_reader :render_filter
+    attr_reader :parse_filter
+    attr_reader :skip_render
+    attr_reader :___prepare
+    attr_reader :extend
+    attr_reader :as
+    attr_reader :render_empty
+    attr_reader :serialize
+
+    #, :writeable, :if, :exec_context, :writer, :pass_options, :getter
 
     def merge!(options, &block)
       options = options.clone
@@ -109,6 +151,11 @@ module Representable
         @runtime_options[name] = value
       end
     end
+
+
+
+
+
 
     def dynamic_options
       [:as, :getter, :setter, :class, :instance, :reader, :writer, :extend, :prepare, :if, :deserialize, :serialize, :render_filter, :parse_filter, :skip_parse, :skip_render]

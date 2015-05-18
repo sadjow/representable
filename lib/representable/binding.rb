@@ -20,9 +20,17 @@ module Representable
       @parent_decorator = parent_decorator # DISCUSS: where's this needed?
 
       # static options. do this once.
-      @_representable = @definition.representable?
+      @representable = @definition.representable?
       @_skip_filters  = self[:readable]==false || self[:writeable]==false || self[:if]
+
+      @typed = @definition.typed?
     end
+
+    attr_reader :representable
+    attr_reader :typed
+
+    alias_method :"representable?", :representable
+    alias_method :"typed?", :typed
 
     attr_reader :user_options, :represented # TODO: make private/remove.
 
@@ -82,8 +90,8 @@ module Representable
 
 
     def get
-      evaluate_option(:getter) do
-        exec_context.send(getter)
+      evaluate_option(:___getter) do
+        exec_context.send(@definition.getter)
       end
     end
 
@@ -116,25 +124,27 @@ module Representable
     end
 
     def [](name)
-      @definition[name]
+      #@definition[name]
+      @definition.send(name)
     end
     # TODO: i don't want to define all methods here, but it is faster!
     # TODO: test public interface.
-    def getter
-      @definition.getter
-    end
+    # def getter
+    #   @definition.getter
+    # end
     def setter
       @definition.setter
     end
-    def typed?
-      @definition.typed?
-    end
+    # def typed?
+    #   @definition.typed?
+    # end
     #   1.87      0.096     0.029     0.000     0.067    40001   Representable::Definition#representable?
     #   1.12      0.066     0.016     0.000     0.050    40001   Representable::Binding#representable? with `@_representable ||= definition.representable`  (no caching when false)!!!
     #   0.82      0.012     0.012     0.000     0.000    40001   Representable::Binding#representable?
-    def representable?
-      @_representable
-    end
+    # def representable?
+    #   puts raise
+    #   @_representable
+    # end
     def has_default?(*args)
       @definition.has_default?(*args)
     end

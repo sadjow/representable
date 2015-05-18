@@ -20,7 +20,7 @@ module Representable
     def serialize!(object, user_options)
       object = prepare(object)
 
-      return object unless @binding.representable?
+      return object unless @binding.representable
 
       @binding.evaluate_option(:serialize, object) do
         marshal(object, user_options)

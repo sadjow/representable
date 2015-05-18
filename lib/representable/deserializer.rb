@@ -38,7 +38,7 @@ module Representable
 
     module Prepare
       def prepare(object)
-        @binding.evaluate_option(:prepare, object) do
+        @binding.evaluate_option(:___prepare, object) do
           prepare!(object)
         end
       end
