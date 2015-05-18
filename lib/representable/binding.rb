@@ -20,10 +20,14 @@ module Representable
       @parent_decorator = parent_decorator # DISCUSS: where's this needed?
 
       # static options. do this once.
-      @representable = @definition.representable?
-      @_skip_filters  = self[:readable]==false || self[:writeable]==false || self[:if]
-
-      @typed = @definition.typed?
+      @representable    = @definition.representable?
+      @name             = @definition.name
+      @skip_filters     = self[:readable]==false || self[:writeable]==false || self[:if] # Does this binding contain :if, :readable or :writeable settings?
+      @getter           = @definition.getter
+      @setter           = @definition.setter
+      @array            = @definition.array?
+      @typed            = @definition.typed?
+      @has_default      = @definition.has_default?
     end
 
     attr_reader :representable
@@ -33,6 +37,14 @@ module Representable
     alias_method :"typed?", :typed
 
     attr_reader :user_options, :represented # TODO: make private/remove.
+
+    # DISCUSS: an overall strategy to speed up option reads will come around 3.0.
+    attr_reader :representable, :name, :getter, :setter, :array, :typed, :skip_filters, :has_default
+    alias_method :representable?, :representable
+    alias_method :array?, :array
+    alias_method :typed?, :typed
+    alias_method :skip_filters?, :skip_filters
+    alias_method :has_default?, :has_default
 
     def as # DISCUSS: private?
       @as ||= evaluate_option(:as)
@@ -68,7 +80,6 @@ module Representable
     end
 
     def render_fragment(value, doc)
-      # DISCUSS: should we return a Skip object instead of this block trick? (same in Populator?)
       fragment = serialize(value) { return } # render fragments of hash, xml, yaml.
 
       write(doc, fragment)
@@ -87,7 +98,6 @@ module Representable
     def parse_filter(value, doc)
       evaluate_option(:parse_filter, value, doc) { value }
     end
-
 
     def get
       evaluate_option(:___getter) do
@@ -112,7 +122,7 @@ module Representable
     # Evaluate the option (either nil, static, a block or an instance method call) or
     # executes passed block when option not defined.
     def evaluate_option(name, *args)
-      unless proc = self[name]
+      unless proc = self[name] # TODO: this could dispatch directly to the @definition?
         return yield if block_given?
         return
       end
@@ -127,40 +137,6 @@ module Representable
       #@definition[name]
       @definition.send(name)
     end
-    # TODO: i don't want to define all methods here, but it is faster!
-    # TODO: test public interface.
-    # def getter
-    #   @definition.getter
-    # end
-    def setter
-      @definition.setter
-    end
-    # def typed?
-    #   @definition.typed?
-    # end
-    #   1.87      0.096     0.029     0.000     0.067    40001   Representable::Definition#representable?
-    #   1.12      0.066     0.016     0.000     0.050    40001   Representable::Binding#representable? with `@_representable ||= definition.representable`  (no caching when false)!!!
-    #   0.82      0.012     0.012     0.000     0.000    40001   Representable::Binding#representable?
-    # def representable?
-    #   puts raise
-    #   @_representable
-    # end
-    def has_default?(*args)
-      @definition.has_default?(*args)
-    end
-    def name
-      @definition.name
-    end
-    def representer_module # FIXME: where do we need that?
-      @definition.representer_module
-    end
-    # perf : 1.7-1.9
-    #extend Forwardable
-    #def_delegators :@definition, *%w([] getter setter typed? representable? has_default? name representer_module)
-    # perf : 1.7-1.9
-    # %w([] getter setter typed? representable? has_default? name representer_module).each do |name|
-    #   define_method(name.to_sym) { |*args| @definition.send(name, *args) }
-    # end
 
     #   1.55      0.031     0.022     0.000     0.009    60004   Representable::Binding#skipable_empty_value?
     #   1.51      0.030     0.022     0.000     0.008    60004   Representable::Binding#skipable_empty_value?
@@ -175,22 +151,12 @@ module Representable
       value
     end
 
-      # 1.24      0.043     0.024     0.000     0.019    60009   Representable::Definition#array?
-    def array?
-      @definition.array?
-    end
-
     # Note: this method is experimental.
     def update!(represented, user_options)
       @represented      = represented
       @user_options     = user_options
 
       setup_exec_context!
-    end
-
-    # Does this binding contain :if, :readable or :writeable settings?
-    def skip_filters? # FIXME: test me.
-      @_skip_filters
     end
 
     attr_accessor :cached_representer
