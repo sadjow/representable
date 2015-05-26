@@ -4,6 +4,10 @@ module Representable
       @representable_attrs ||= build_config
     end
 
+    def strategic_property_options(&block)
+      @strategic_property_options = block
+    end
+
     def representation_wrap=(name)
       representable_attrs.wrap = name
     end
@@ -34,7 +38,11 @@ module Representable
 
     def property(name, options={}, &block)
       representable_attrs.add(name, options) do |default_options| # handles :inherit.
-        build_definition(name, default_options, &block)
+        strategic_options = default_options
+        unless @strategic_property_options.nil?
+          strategic_options.merge!(@strategic_property_options.call(name, options))
+        end
+        build_definition(name, strategic_options, &block)
       end
     end
 
